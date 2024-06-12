@@ -13,6 +13,10 @@ public class CredentialRequest {
     /**
      * REQUIRED. Format of the Credential to be issued.
      */
+
+    /**
+     * TO-Do - Condition to handle request body
+     */
     @NotBlank(message = ErrorConstants.INVALID_VC_FORMAT)
     private String format;
 
@@ -23,6 +27,9 @@ public class CredentialRequest {
     @Valid
     @NotNull(message = ErrorConstants.INVALID_PROOF)
     private CredentialProof proof;
+
+    @Valid
+    private String doctype;
 
     /**
      * "format": jwt_vc_json | jwt_vc_json-ld | ldp_vc
@@ -35,6 +42,8 @@ public class CredentialRequest {
      * in the subsequent Credential Request.
      */
     @Valid
-    @NotNull(message = ErrorConstants.INVALID_REQUEST)
     private CredentialDefinition credential_definition;
+
+    @Valid
+    private Claims claims;
 }

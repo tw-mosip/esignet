@@ -1,6 +1,7 @@
 package io.mosip.esignet;
 
 import foundation.identity.jsonld.JsonLDObject;
+import io.mosip.esignet.api.dto.MdocRequestDto;
 import io.mosip.esignet.api.dto.VCRequestDto;
 import io.mosip.esignet.api.dto.VCResult;
 import io.mosip.esignet.api.spi.VCIssuancePlugin;
@@ -23,6 +24,12 @@ public class TestVCIPluginImpl implements VCIssuancePlugin {
 
     @Override
     public VCResult<String> getVerifiableCredential(VCRequestDto vcRequestDto, String holderId, Map<String, Object> identityDetails) {
+        return new VCResult<>();
+    }
+
+
+    @Override
+    public VCResult<String> getMDocVerifiableCredential(MdocRequestDto mdocRequestDto, String holderId, Map<String, Object> identityDetails){
         return new VCResult<>();
     }
 }

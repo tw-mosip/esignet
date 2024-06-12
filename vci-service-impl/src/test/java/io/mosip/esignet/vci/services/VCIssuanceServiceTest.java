@@ -8,8 +8,10 @@ package io.mosip.esignet.vci.services;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import foundation.identity.jsonld.JsonLDObject;
 import io.mosip.esignet.api.dto.AuditDTO;
+import io.mosip.esignet.api.dto.MdocRequestDto;
 import io.mosip.esignet.api.dto.VCRequestDto;
 import io.mosip.esignet.api.dto.VCResult;
+import io.mosip.esignet.api.exception.VCIExchangeException;
 import io.mosip.esignet.api.spi.AuditPlugin;
 import io.mosip.esignet.api.spi.VCIssuancePlugin;
 import io.mosip.esignet.api.util.Action;
@@ -93,6 +95,14 @@ public class VCIssuanceServiceTest {
                 vcResult_jwt = new VCResult<>();
                 vcResult_jwt.setCredential("jwt");
                 vcResult_jwt.setFormat("jwt_vc_json-ld");
+                return vcResult_jwt;
+            }
+
+            @Override
+            public VCResult<String> getMDocVerifiableCredential(MdocRequestDto mdocRequestDto, String holderId, Map<String, Object> identityDetails) throws VCIExchangeException {
+                vcResult_jwt = new VCResult<>();
+                vcResult_jwt.setCredential("jwt");
+                vcResult_jwt.setFormat("mso_mdoc");
                 return vcResult_jwt;
             }
         });

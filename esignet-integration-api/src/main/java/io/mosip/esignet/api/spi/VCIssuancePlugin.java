@@ -6,6 +6,7 @@
 package io.mosip.esignet.api.spi;
 
 import foundation.identity.jsonld.JsonLDObject;
+import io.mosip.esignet.api.dto.MdocRequestDto;
 import io.mosip.esignet.api.dto.VCRequestDto;
 import io.mosip.esignet.api.dto.VCResult;
 import io.mosip.esignet.api.exception.VCIExchangeException;
@@ -32,5 +33,14 @@ public interface VCIssuancePlugin {
      * @return
      */
     VCResult<String> getVerifiableCredential(VCRequestDto vcRequestDto, String holderId,
-                                                                             Map<String, Object> identityDetails) throws VCIExchangeException;
+
+     /**
+      * Applicable for formats : mso_doc
+      * @param mdocRequestDto
+      * @param holderId
+      * @param identityDetails
+      * @return
+      */                                                                  Map<String, Object> identityDetails) throws VCIExchangeException;
+    VCResult<String> getMDocVerifiableCredential(MdocRequestDto mdocRequestDto, String holderId,
+                                                 Map<String, Object> identityDetails) throws VCIExchangeException;
 }

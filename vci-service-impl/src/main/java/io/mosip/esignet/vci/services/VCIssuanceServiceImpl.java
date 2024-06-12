@@ -7,6 +7,7 @@ package io.mosip.esignet.vci.services;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import foundation.identity.jsonld.JsonLDObject;
+import io.mosip.esignet.api.dto.MdocRequestDto;
 import io.mosip.esignet.api.dto.VCRequestDto;
 import io.mosip.esignet.api.dto.VCResult;
 import io.mosip.esignet.api.exception.VCIExchangeException;
@@ -121,15 +122,16 @@ public class VCIssuanceServiceImpl implements VCIssuanceService {
                                                 String holderId) {
         parsedAccessToken.getClaims().put("accessTokenHash", parsedAccessToken.getAccessTokenHash());
         VCRequestDto vcRequestDto = new VCRequestDto();
-        vcRequestDto.setFormat(credentialRequest.getFormat());
-        vcRequestDto.setContext(credentialRequest.getCredential_definition().getContext());
-        vcRequestDto.setType(credentialRequest.getCredential_definition().getType());
-        vcRequestDto.setCredentialSubject(credentialRequest.getCredential_definition().getCredentialSubject());
 
         VCResult<?> vcResult = null;
         try {
             switch (credentialRequest.getFormat()) {
                 case "ldp_vc" :
+                    vcRequestDto.setFormat(credentialRequest.getFormat());
+                    vcRequestDto.setContext(credentialRequest.getCredential_definition().getContext());
+                    vcRequestDto.setType(credentialRequest.getCredential_definition().getType());
+                    vcRequestDto.setCredentialSubject(credentialRequest.getCredential_definition().getCredentialSubject());
+
                     validateLdpVcFormatRequest(credentialRequest, credentialMetadata);
                     vcResult = vcIssuancePlugin.getVerifiableCredentialWithLinkedDataProof(vcRequestDto, holderId,
                             parsedAccessToken.getClaims());
@@ -139,6 +141,11 @@ public class VCIssuanceServiceImpl implements VCIssuanceService {
                 case "jwt_vc_json-ld" :
                 case "jwt_vc_json" :
                     vcResult = vcIssuancePlugin.getVerifiableCredential(vcRequestDto, holderId,
+                            parsedAccessToken.getClaims());
+                    break;
+                case "mso_mdoc":
+                    MdocRequestDto mdocRequestDto = new MdocRequestDto();
+                    vcResult = vcIssuancePlugin.getMDocVerifiableCredential(mdocRequestDto, holderId,
                             parsedAccessToken.getClaims());
                     break;
                 default:
@@ -171,6 +178,12 @@ public class VCIssuanceServiceImpl implements VCIssuanceService {
                 jsonResponse.setCredential((String)vcResult.getCredential());
                 jsonResponse.setFormat(vcResult.getFormat());
                 return jsonResponse;
+            case "mso_mdoc":
+                CredentialResponse<String> mDlMdocResponse = new CredentialResponse<>();
+                mDlMdocResponse.setCredential((String)vcResult.getCredential());
+                mDlMdocResponse.setFormat(vcResult.getFormat());
+                return mDlMdocResponse;
+
         }
         throw new EsignetException(ErrorConstants.UNSUPPORTED_VC_FORMAT);
     }
