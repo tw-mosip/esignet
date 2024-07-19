@@ -59,6 +59,7 @@ public class AuthorizationController {
                                                                         requestWrapper) throws EsignetException {
         ResponseWrapper responseWrapper = new ResponseWrapper();
         try {
+            System.out.println("in oAuthDetails");
             responseWrapper.setResponse(authorizationService.getOauthDetailsV2(requestWrapper.getRequest()));
             responseWrapper.setResponseTime(IdentityProviderUtil.getUTCDateTime());
         } catch (EsignetException ex) {

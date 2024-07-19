@@ -55,6 +55,7 @@ public class CacheUtilService {
                     condition = "#oidcTransaction.getLinkedCodeHash() != null" )},
             cacheable = {@Cacheable(value = Constants.USERINFO_CACHE, key = "#accessTokenHash")})
     public OIDCTransaction setUserInfoTransaction(String accessTokenHash, OIDCTransaction oidcTransaction) {
+        System.out.println("About to be cached Access token hash: " + accessTokenHash+" and the transaction "+  oidcTransaction);
         return oidcTransaction;
     }
 

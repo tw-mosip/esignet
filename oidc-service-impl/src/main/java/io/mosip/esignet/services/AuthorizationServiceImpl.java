@@ -108,6 +108,8 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public OAuthDetailResponseV2 getOauthDetailsV2(OAuthDetailRequestV2 oauthDetailReqDto) throws EsignetException {
+        System.out.println("hi there");
+
         ClientDetail clientDetailDto = clientManagementService.getClientDetails(oauthDetailReqDto.getClientId());
         OAuthDetailResponseV2 oAuthDetailResponseV2 = new OAuthDetailResponseV2();
         Pair<OAuthDetailResponse, OIDCTransaction> pair = checkAndBuildOIDCTransaction(oauthDetailReqDto, clientDetailDto, oAuthDetailResponseV2);
@@ -125,13 +127,15 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         oidcTransaction.setProofKeyCodeExchange(ProofKeyCodeExchange.getInstance(oauthDetailReqDto.getCodeChallenge(),
                 oauthDetailReqDto.getCodeChallengeMethod()));
 
-        if(mandatePKCEForVC && CollectionUtils.isNotEmpty(oidcTransaction.getRequestedCredentialScopes()) &&
+        if (mandatePKCEForVC && CollectionUtils.isNotEmpty(oidcTransaction.getRequestedCredentialScopes()) &&
                 oidcTransaction.getProofKeyCodeExchange() == null) {
             log.error("PKCE is mandated for VC scoped transactions");
             throw new EsignetException(ErrorConstants.INVALID_PKCE_CHALLENGE);
         }
 
         cacheUtilService.setTransaction(oAuthDetailResponseV2.getTransactionId(), pair.getSecond());
+        System.out.println("Set cahce being read -> " + cacheUtilService.getPreAuthTransaction(oAuthDetailResponseV2.getTransactionId()));
+
         auditWrapper.logAudit(Action.TRANSACTION_STARTED, ActionStatus.SUCCESS, AuditHelper.buildAuditDto(oAuthDetailResponseV2.getTransactionId(),
                 pair.getSecond()), null);
         return oAuthDetailResponseV2;
@@ -142,13 +146,13 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         authorizationHelperService.validateSendOtpCaptchaToken(otpRequest.getCaptchaToken());
 
         OIDCTransaction transaction = cacheUtilService.getPreAuthTransaction(otpRequest.getTransactionId());
-        if(transaction == null)
+        if (transaction == null)
             throw new InvalidTransactionException();
 
         transaction = cacheUtilService.updateIndividualIdHashInPreAuthCache(otpRequest.getTransactionId(),
                 otpRequest.getIndividualId());
 
-        if(cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
+        if (cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
             throw new EsignetException(ErrorConstants.INDIVIDUAL_ID_BLOCKED);
 
         SendOtpResult sendOtpResult = authorizationHelperService.delegateSendOtpRequest(otpRequest, transaction);
@@ -161,7 +165,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     }
 
     @Override
-    public AuthResponse authenticateUser(AuthRequest authRequest)  throws EsignetException {
+    public AuthResponse authenticateUser(AuthRequest authRequest) throws EsignetException {
         authenticate(authRequest, false);
         AuthResponse authRespDto = new AuthResponse();
         authRespDto.setTransactionId(authRequest.getTransactionId());
@@ -179,7 +183,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public AuthResponseV2 authenticateUserV3(AuthRequestV2 authRequest) throws EsignetException {
-        if(!CollectionUtils.isEmpty(captchaRequired) &&
+        if (!CollectionUtils.isEmpty(captchaRequired) &&
                 authRequest.getChallengeList().stream().anyMatch(authChallenge ->
                         captchaRequired.contains(authChallenge.getAuthFactorType().toLowerCase()))) {
             authorizationHelperService.validateCaptchaToken(authRequest.getCaptchaToken());
@@ -190,19 +194,19 @@ public class AuthorizationServiceImpl implements AuthorizationService {
     @Override
     public AuthCodeResponse getAuthCode(AuthCodeRequest authCodeRequest) throws EsignetException {
         OIDCTransaction transaction = cacheUtilService.getAuthenticatedTransaction(authCodeRequest.getTransactionId());
-        if(transaction == null) {
+        if (transaction == null) {
             throw new InvalidTransactionException();
         }
 
         List<String> acceptedClaims = authCodeRequest.getAcceptedClaims();
         List<String> acceptedScopes = authCodeRequest.getPermittedAuthorizeScopes();
-        if(ConsentAction.NOCAPTURE.equals(transaction.getConsentAction())) {
+        if (ConsentAction.NOCAPTURE.equals(transaction.getConsentAction())) {
             acceptedClaims = transaction.getAcceptedClaims();
             acceptedScopes = transaction.getPermittedScopes();
         }
 
         //Combination of OIDC and credential scopes are not allowed in single OIDC transaction
-        if(CollectionUtils.isNotEmpty(transaction.getRequestedCredentialScopes()) && autoPermitCredentialScopes) {
+        if (CollectionUtils.isNotEmpty(transaction.getRequestedCredentialScopes()) && autoPermitCredentialScopes) {
             log.info("Permitting the requested credential scopes automatically");
             acceptedScopes = transaction.getRequestedCredentialScopes();
         }
@@ -229,12 +233,12 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     private OIDCTransaction authenticate(AuthRequest authRequest, boolean checkConsentAction) {
         OIDCTransaction transaction = cacheUtilService.getPreAuthTransaction(authRequest.getTransactionId());
-        if(transaction == null)
+        if (transaction == null)
             throw new InvalidTransactionException();
 
         transaction = cacheUtilService.updateIndividualIdHashInPreAuthCache(authRequest.getTransactionId(),
                 authRequest.getIndividualId());
-        if(cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
+        if (cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
             throw new EsignetException(ErrorConstants.INDIVIDUAL_ID_BLOCKED);
 
         //Validate provided challenge list auth-factors with resolved auth-factors for the transaction.
@@ -251,7 +255,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
                 .collect(Collectors.toList())).collect(Collectors.toSet()));
         authorizationHelperService.setIndividualId(authRequest.getIndividualId(), transaction);
 
-        if(checkConsentAction) {
+        if (checkConsentAction) {
             consentHelperService.processConsent(transaction, false);
         }
 
@@ -318,25 +322,27 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         log.info("isRequestedUserInfoClaimsPresent ? {}", isRequestedUserInfoClaimsPresent);
 
         //Claims request parameter is allowed, only if 'openid' is part of the scope request parameter
-        if(isRequestedUserInfoClaimsPresent && !Arrays.stream(requestedScopes).anyMatch(s  -> SCOPE_OPENID.equals(s)))
+        if (isRequestedUserInfoClaimsPresent && !Arrays.stream(requestedScopes).anyMatch(s -> SCOPE_OPENID.equals(s)))
             throw new EsignetException(ErrorConstants.INVALID_SCOPE);
 
         log.info("Started to resolve claims based on the request scope {} and claims {}", requestedScopes, requestedClaims);
         //get claims based on scope
         List<String> claimBasedOnScope = new ArrayList<>();
         Arrays.stream(requestedScopes)
-                .forEach(scope -> { claimBasedOnScope.addAll(claims.getOrDefault(scope, new ArrayList<>())); });
+                .forEach(scope -> {
+                    claimBasedOnScope.addAll(claims.getOrDefault(scope, new ArrayList<>()));
+                });
 
         log.info("Resolved claims: {} based on request scope : {}", claimBasedOnScope, requestedScopes);
 
         //claims considered only if part of registered claims
-        if(clientDetailDto.getClaims() != null) {
+        if (clientDetailDto.getClaims() != null) {
             clientDetailDto.getClaims()
                     .stream()
-                    .forEach( claimName -> {
-                        if(isRequestedUserInfoClaimsPresent && requestedClaims.getUserinfo().containsKey(claimName))
+                    .forEach(claimName -> {
+                        if (isRequestedUserInfoClaimsPresent && requestedClaims.getUserinfo().containsKey(claimName))
                             resolvedClaims.getUserinfo().put(claimName, requestedClaims.getUserinfo().get(claimName));
-                        else if(claimBasedOnScope.contains(claimName))
+                        else if (claimBasedOnScope.contains(claimName))
                             resolvedClaims.getUserinfo().put(claimName, null);
                     });
         }
@@ -350,14 +356,14 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         claimDetail.setEssential(true);
 
         log.info("Registered ACRS :{}", registeredACRs);
-        if(registeredACRs == null || registeredACRs.isEmpty())
+        if (registeredACRs == null || registeredACRs.isEmpty())
             throw new EsignetException(ErrorConstants.NO_ACR_REGISTERED);
 
         //First priority is given to claims request parameter
-        if(requestedClaims != null && requestedClaims.getId_token() != null && requestedClaims.getId_token().get(ACR) != null) {
-            String [] acrs = requestedClaims.getId_token().get(ACR).getValues();
+        if (requestedClaims != null && requestedClaims.getId_token() != null && requestedClaims.getId_token().get(ACR) != null) {
+            String[] acrs = requestedClaims.getId_token().get(ACR).getValues();
             String[] filteredAcrs = Arrays.stream(acrs).filter(acr -> registeredACRs.contains(acr)).toArray(String[]::new);
-            if(filteredAcrs.length > 0) {
+            if (filteredAcrs.length > 0) {
                 claimDetail.setValues(filteredAcrs);
                 return claimDetail;
             }
@@ -366,7 +372,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         //Next priority is given to acr_values request parameter
         String[] acrs = IdentityProviderUtil.splitAndTrimValue(requestedAcr, Constants.SPACE);
         String[] filteredAcrs = Arrays.stream(acrs).filter(acr -> registeredACRs.contains(acr)).toArray(String[]::new);
-        if(filteredAcrs.length > 0) {
+        if (filteredAcrs.length > 0) {
             claimDetail.setValues(filteredAcrs);
             return claimDetail;
         }
@@ -401,9 +407,11 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         final byte[] authTransactionIdBytes = new byte[authTransactionIdLength];
         int i = oidcTransactionIdBytes.length - 1;
         int j = 0;
-        while(j < authTransactionIdLength) {
+        while (j < authTransactionIdLength) {
             authTransactionIdBytes[j++] = oidcTransactionIdBytes[i--];
-            if(i < 0) { i = oidcTransactionIdBytes.length - 1; }
+            if (i < 0) {
+                i = oidcTransactionIdBytes.length - 1;
+            }
         }
         return new String(authTransactionIdBytes);
     }

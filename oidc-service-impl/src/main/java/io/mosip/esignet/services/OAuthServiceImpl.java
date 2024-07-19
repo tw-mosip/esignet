@@ -103,7 +103,9 @@ public class OAuthServiceImpl implements OAuthService {
 
         TokenResponse tokenResponse = getTokenResponse(transaction, isTransactionVCScoped);
         // cache kyc with access-token as key
+        System.out.println("cache kyc with access-token as key");
         cacheUtilService.setUserInfoTransaction(transaction.getAHash(), transaction);
+        System.out.println("getting the user info transaction set in cache in same app "+cacheUtilService.getUserInfoTransaction(transaction.getAHash()));
         auditWrapper.logAudit(Action.GENERATE_TOKEN, ActionStatus.SUCCESS, AuditHelper.buildAuditDto(transaction.getTransactionId(),
                 transaction), null);
         return tokenResponse;
