@@ -70,7 +70,7 @@ export default function Background({
       {/* Enable the signup banner when it is true in the signup.config of oauth-details */}
       {signupBanner && 
       <div className="signup-banner">
-        <p className="signup-banner-text" id="no-account">{t("noAccount")}</p>
+        <p className="signup-banner-text">{t("noAccount")}</p>
         <a className="signup-banner-hyperlink" id="signup-url-button" href={signupURL} target="_self" onClick={() => handleSignup()}>{t("signup_for_unified_login")}</a>
       </div>}
     </div>

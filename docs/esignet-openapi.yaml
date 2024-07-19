@@ -27,6 +27,8 @@ info:
     PSUT - Partner(Relying Party) Specific User Token</br>
     VC - Verifiable Credential</br>
     VCI - Verifiable Credential Issuance      
+  
+
   contact:
     name: MOSIP Team
     email: info@mosip.io

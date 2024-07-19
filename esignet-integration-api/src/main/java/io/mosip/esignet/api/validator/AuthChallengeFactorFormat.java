@@ -17,8 +17,9 @@ import static java.lang.annotation.RetentionPolicy.RUNTIME;
 @Constraint(validatedBy = AuthChallengeFactorFormatValidator.class)
 @Documented
 public @interface AuthChallengeFactorFormat {
+
     String message() default ErrorConstants.INVALID_CHALLENGE;
-    
+
     Class<?>[] groups() default {};
 
     Class<? extends Payload>[] payload() default {};

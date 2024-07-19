@@ -152,7 +152,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
         transaction = cacheUtilService.updateIndividualIdHashInPreAuthCache(otpRequest.getTransactionId(),
                 otpRequest.getIndividualId());
 
-        if (cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
+        if(cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
             throw new EsignetException(ErrorConstants.INDIVIDUAL_ID_BLOCKED);
 
         SendOtpResult sendOtpResult = authorizationHelperService.delegateSendOtpRequest(otpRequest, transaction);
@@ -183,7 +183,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
     @Override
     public AuthResponseV2 authenticateUserV3(AuthRequestV2 authRequest) throws EsignetException {
-        if (!CollectionUtils.isEmpty(captchaRequired) &&
+        if(!CollectionUtils.isEmpty(captchaRequired) &&
                 authRequest.getChallengeList().stream().anyMatch(authChallenge ->
                         captchaRequired.contains(authChallenge.getAuthFactorType().toLowerCase()))) {
             authorizationHelperService.validateCaptchaToken(authRequest.getCaptchaToken());
@@ -238,7 +238,7 @@ public class AuthorizationServiceImpl implements AuthorizationService {
 
         transaction = cacheUtilService.updateIndividualIdHashInPreAuthCache(authRequest.getTransactionId(),
                 authRequest.getIndividualId());
-        if (cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
+        if(cacheUtilService.isIndividualIdBlocked(transaction.getIndividualIdHash()))
             throw new EsignetException(ErrorConstants.INDIVIDUAL_ID_BLOCKED);
 
         //Validate provided challenge list auth-factors with resolved auth-factors for the transaction.

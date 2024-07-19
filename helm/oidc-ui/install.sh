@@ -7,7 +7,7 @@ if [ $# -ge 1 ] ; then
 fi
 
 NS=esignet
-CHART_VERSION=0.0.1-develop
+CHART_VERSION=1.4.1
 
 echo Create $NS namespace
 kubectl create ns $NS
@@ -26,7 +26,7 @@ function installing_oidc-ui() {
 
   echo Installing OIDC UI
   helm -n $NS install oidc-ui mosip/oidc-ui \
-  -f values.yaml
+  -f values.yaml \
   --set istio.hosts\[0\]=$ESIGNET_HOST \
   --version $CHART_VERSION
 
